@@ -1,5 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
+import { jwtDecode } from "jwt-decode";
+import Link from "next/link";
 
 interface User {
   _id: string;
@@ -29,23 +31,45 @@ export default async function Conversation() {
   const token = cookieStore.get("token")?.value;
 
   if (!token) {
+    console.log("!token");
     redirect("/login");
+    return;
   }
+
   const response = await fetch("http://localhost:3000/conversations", {
     headers: {
       Cookie: `token=${token}`,
     },
   });
 
-  const result = await response.json();
-
   if (!response.ok) {
+    console.log("Anoteher");
     redirect("/login");
   }
 
-  const conversations = result.data;
+  const decode = jwtDecode<{ id: string }>(token);
+  const currentUserId = decode.id;
+  const result = await response.json();
+  const conversations: Conversation[] = result.data;
 
-  const convoUi = conversations.map((element:Conversation) => {});
+  const convoUi = conversations.map((ele) => {
+    const text = ele.lastMessageId.text;
+    const otherId = ele.participants.find((ele) => ele._id !== currentUserId);
+    const otherUsername = otherId?.username;
 
-  return <div>Conversation Page</div>;
+    return (
+      <Link key={ele._id} href={`/conversations/${ele._id}`}>
+        <div className="border">
+          <p className="font-bold">{otherUsername}</p>
+          <p>{text}</p>
+        </div>
+      </Link>
+    );
+  });
+
+  return (
+    <div>
+      <div>{convoUi}</div>
+    </div>
+  );
 }
