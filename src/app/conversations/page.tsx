@@ -26,7 +26,7 @@ interface Conversation {
   lastMessageAt: string;
 }
 
-export default async function Conversation() {
+export default async function Conversations() {
   const cookieStore = await cookies();
   const token = cookieStore.get("token")?.value;
 
@@ -43,7 +43,6 @@ export default async function Conversation() {
   });
 
   if (!response.ok) {
-    console.log("Anoteher");
     redirect("/login");
   }
 
