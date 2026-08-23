@@ -1,7 +1,7 @@
 import { cookies } from "next/headers";
 import { redirect } from "next/navigation";
 import { jwtDecode } from "jwt-decode";
-import { ChatForm } from "@/app/chatForm";
+import { ChatRoom } from "@/app/ChatRoom";
 
 interface User {
   _id: string;
@@ -25,7 +25,6 @@ interface Conversation {
   lastMessageId: Message;
   lastMessageAt: string;
 }
-
 
 export default async function Messages({
   params,
@@ -56,11 +55,14 @@ export default async function Messages({
 
     result = await response.json();
 
-    response2 = await fetch(`http://localhost:3000/conversation/${conversationId}`, {
-      headers: {
-        Cookie: `token=${token}`,
+    response2 = await fetch(
+      `http://localhost:3000/conversation/${conversationId}`,
+      {
+        headers: {
+          Cookie: `token=${token}`,
+        },
       },
-    });
+    );
 
     result2 = await response2.json();
   } catch {
@@ -72,46 +74,18 @@ export default async function Messages({
   }
 
   const data: Message[] = result.data;
-  const convo:Conversation=result2.data;
-  
+  const convo: Conversation = result2.data;
+
   const decode = jwtDecode<{ id: string }>(token);
   const currentUserId = decode.id;
-  const receiver=convo.participants.find((ele)=>{return ele._id!==currentUserId});
-  const receiverId=receiver?._id
+  const receiverId = convo.participants.find((ele) => {
+    return ele._id !== currentUserId;
+  })?._id
 
-  if(!receiverId){
+  if (!receiverId) {
     redirect("/login");
   }
 
 
-  const msgUi = data.map((ele) => {
-    if (ele.senderId === currentUserId) {
-
-      return (
-        <div key={ele._id}>
-          <p className="bg-green-300 w-fit px-4 py-2 rounded-2xl mt-2">
-            {ele.text}
-          </p>
-        </div>
-      );
-    } else {
-      return (
-        <div
-          key={ele._id}
-          className="bg-gray-300 w-fit px-4 py-2 rounded-2xl mt-2"
-        >
-          {ele.text}
-        </div>
-      );
-    }
-  });
-
-  return (
-    <div>
-      <div>{msgUi}</div>
-      <div>
-        <ChatForm receiverId={receiverId}/>
-      </div>
-    </div>
-  );
+  return <ChatRoom receiverId={receiverId} currentUserId={currentUserId} messages={data} />;
 }

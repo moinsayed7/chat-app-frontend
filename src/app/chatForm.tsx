@@ -1,11 +1,10 @@
 "use client";
 
-import { useRef, useEffect, useState } from "react";
+import { useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-export function ChatForm({ receiverId }: { receiverId: string | undefined }) {
+export function ChatForm({ receiverId, socketRef }: { receiverId: string | undefined, socketRef:Socket|null }) {
   const [text, setText] = useState<string>("");
-  const socketRef = useRef<Socket | null>(null);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
@@ -14,24 +13,16 @@ export function ChatForm({ receiverId }: { receiverId: string | undefined }) {
       return;
     }
 
-    if (!socketRef.current) {
+    if (!socketRef) {
       return;
     }
 
-    socketRef.current.emit("sendMessage", {receiverId, text});
+    socketRef.emit("sendMessage", {receiverId, text});
 
     setText("")
   }
 
-  useEffect(() => {
-    const socket = io("http://localhost:3000", { withCredentials: true });
-    socketRef.current = socket;
-
-    return () => {
-      socket.disconnect();
-    };
-  },[]);
-
+  
   return (
     <form onSubmit={handleSubmit}>
       <input
