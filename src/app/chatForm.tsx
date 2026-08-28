@@ -3,7 +3,13 @@
 import { useState } from "react";
 import { io, Socket } from "socket.io-client";
 
-export function ChatForm({ receiverId, socketRef }: { receiverId: string | undefined, socketRef:Socket|null }) {
+export function ChatForm({
+  receiverId,
+  socket,
+}: {
+  receiverId: string | undefined;
+  socket: Socket;
+}) {
   const [text, setText] = useState<string>("");
 
   function handleSubmit(e: React.FormEvent) {
@@ -13,16 +19,18 @@ export function ChatForm({ receiverId, socketRef }: { receiverId: string | undef
       return;
     }
 
-    if (!socketRef) {
+    if (!socket) {
       return;
     }
 
-    socketRef.emit("sendMessage", {receiverId, text});
+    socket.emit("sendMessage", {
+      receiverId,
+      text: text.trim(),
+    });
 
-    setText("")
+    setText("");
   }
 
-  
   return (
     <form onSubmit={handleSubmit}>
       <input
