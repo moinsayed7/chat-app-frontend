@@ -57,7 +57,7 @@ export default async function Conversations() {
     const otherUsername = otherId?.username;
 
     return (
-      <Link key={ele._id} href={`/conversations/${ele._id}`}>
+      <Link key={ele._id} href={`/conversations/${otherId?._id}`}>
         <div className="border">
           <p className="font-bold">{otherUsername}</p>
           <p>{text}</p>
