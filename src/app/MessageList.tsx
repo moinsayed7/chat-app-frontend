@@ -22,6 +22,8 @@ export function MessageList({
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
 
+  
+
   useEffect(() => {
   function handleNewMessage(msg: Message) {
     console.log("Received event, appending:", msg);

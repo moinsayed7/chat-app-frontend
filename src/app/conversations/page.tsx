@@ -36,7 +36,7 @@ export default async function Conversations() {
     return;
   }
 
-  const response = await fetch("http://localhost:3000/conversations", {
+  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/conversations`, {
     headers: {
       Cookie: `token=${token}`,
     },

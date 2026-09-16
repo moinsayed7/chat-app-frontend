@@ -1,7 +1,7 @@
 "use client";
 
-import { useState } from "react";
-import { io, Socket } from "socket.io-client";
+import { useEffect, useState } from "react";
+import { Socket } from "socket.io-client";
 
 export function ChatForm({
   receiverId,
@@ -11,15 +11,33 @@ export function ChatForm({
   socket: Socket;
 }) {
   const [text, setText] = useState<string>("");
+  const [error, setError] = useState<null | string>(null);
+
+  useEffect(() => {
+    function handleError(err: string) {
+      setError(err);
+    }
+    socket.on("messageError", handleError);
+
+    return () => {
+      socket.off("messageError", handleError);
+    };
+  }, [socket]);
 
   function handleSubmit(e: React.FormEvent) {
     e.preventDefault();
+    setError(null);
 
     if (!receiverId) {
       return;
     }
 
     if (!socket) {
+      return;
+    }
+
+    if (!text.trim()) {
+      setError("Enter message")
       return;
     }
 
@@ -43,6 +61,7 @@ export function ChatForm({
         }}
       />
       <button type="submit">Send</button>
+      {error && <p>{error}</p>}
     </form>
   );
 }

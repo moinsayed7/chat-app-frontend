@@ -23,7 +23,7 @@ export function SearchedUsers({ searchText }: { searchText: string }) {
     async function fetchUsers() {
       try {
         const response = await fetch(
-          `http://localhost:3000/users?search=${searchText}`,
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/users?search=${searchText}`,
           { credentials: "include" }
         );
         const result = await response.json();

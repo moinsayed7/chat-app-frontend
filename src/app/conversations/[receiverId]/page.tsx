@@ -42,6 +42,7 @@ export default async function Messages({
 
   const token = cookieStore.get("token")?.value;
   if (!token) {
+    console.log("cookie prob");
     redirect("/login");
     return;
   }
@@ -55,7 +56,7 @@ export default async function Messages({
 
   try {
     receiverIdResponse = await fetch(
-      `http://localhost:3000/conversation/with/${receiverId}`,
+      `${process.env.NEXT_PUBLIC_BACKEND_URL}/conversation/with/${receiverId}`,
       {
         headers: {
           Cookie: `token=${token}`,
@@ -65,6 +66,7 @@ export default async function Messages({
 
     receiverIdResult = await receiverIdResponse.json();
   } catch {
+    console.log("line 69");
     redirect("/login");
     return;
   }
@@ -73,7 +75,7 @@ export default async function Messages({
     try {
       const conversationId: string|undefined = receiverIdResult?.data?._id;
       response = await fetch(
-        `http://localhost:3000/message/${conversationId}`,
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/message/${conversationId}`,
         {
           headers: {
             Cookie: `token=${token}`,

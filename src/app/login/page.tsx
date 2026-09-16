@@ -25,7 +25,7 @@ export default function Login() {
     let result;
 
     try {
-      response = await fetch("http://localhost:3000/auth/login", {
+      response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/auth/login`, {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(data),
