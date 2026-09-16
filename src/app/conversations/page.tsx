@@ -1,6 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+"use client";
+
+import { useState, useEffect } from "react";
+import { useRouter } from "next/navigation";
 import Link from "next/link";
 
 interface User {
@@ -26,33 +27,39 @@ interface Conversation {
   lastMessageAt: string;
 }
 
-export default async function Conversations() {
-  const cookieStore = await cookies();
-  const token = cookieStore.get("token")?.value;
+export default function Conversations() {
+  const router = useRouter();
+  const [conversations, setConversations] = useState<Conversation[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
-  if (!token) {
-    console.log("!token");
-    redirect("/login");
-    return;
-  }
+  useEffect(() => {
+    async function fetchConversations() {
+      const response = await fetch(
+        `${process.env.NEXT_PUBLIC_BACKEND_URL}/conversations`,
+        {
+          credentials: "include",
+        },
+      );
 
-  const response = await fetch(`${process.env.NEXT_PUBLIC_BACKEND_URL}/conversations`, {
-    headers: {
-      Cookie: `token=${token}`,
-    },
-  });
+      if (!response.ok) {
+        console.log("token is there but line 46");
+        console.log(response.status);
+        router.push("/login");
+        return;
+      }
 
-  if (!response.ok) {
-    console.log("token is there but line 46");
-    console.log(response.status);
-    redirect("/login");
-  }
+      const result = await response.json();
 
-  const decode = jwtDecode<{ id: string }>(token);
-  const currentUserId = decode.id;
-  const result = await response.json();
-  const conversations: Conversation[] = result.data;
+      const data = result.data;
+      const userId = result.currentUserId;
+      setConversations(data);
+      setCurrentUserId(userId);
+    }
 
+    fetchConversations();
+  }, []);
+
+  // render logic here
   const convoUi = conversations.map((ele) => {
     const text = ele.lastMessageId.text;
     const otherId = ele.participants.find((ele) => ele._id !== currentUserId);
