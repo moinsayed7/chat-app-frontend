@@ -43,6 +43,8 @@ export default async function Conversations() {
   });
 
   if (!response.ok) {
+    console.log("token is there but line 46");
+    console.log(response.status);
     redirect("/login");
   }
 
