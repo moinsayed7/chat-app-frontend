@@ -22,7 +22,9 @@ export function MessageList({
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
 
-  
+  useEffect(()=>{
+      setMessages(initialMessages)
+  },[initialMessages])
 
   useEffect(() => {
   function handleNewMessage(msg: Message) {

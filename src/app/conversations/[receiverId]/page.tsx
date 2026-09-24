@@ -1,7 +1,7 @@
-import { cookies } from "next/headers";
-import { redirect } from "next/navigation";
-import { jwtDecode } from "jwt-decode";
+"use client";
+import { useRouter, useParams } from "next/navigation";
 import { ChatRoom } from "@/app/ChatRoom";
+import { useEffect, useState } from "react";
 
 interface User {
   _id: string;
@@ -28,86 +28,83 @@ interface Conversation {
 
 interface Receiver {
   convoExist: boolean;
-  data: Conversation|null;
+  data: Conversation | null;
 }
 
-export default async function Messages({
-  params,
-}: {
-  params: Promise<{ receiverId: string }>;
-}) {
-  const { receiverId } = await params;
+export default function Messages() {
+  const router = useRouter();
+  const { receiverId } = useParams<{ receiverId: string }>();
 
-  const cookieStore = await cookies();
+  const [message, setMessage] = useState<Message[]>([]);
+  const [currentUserId, setCurrentUserId] = useState<string>("");
 
-  const token = cookieStore.get("token")?.value;
-  if (!token) {
-    console.log("cookie prob");
-    redirect("/login");
-    return;
-  }
+  useEffect(() => {
+    async function fetchConversation() {
+      let response;
+      let result;
 
-  let response;
-  let result;
+      let receiverIdResponse;
+      let receiverIdResult: Receiver;
 
-  let receiverIdResponse;
-  let receiverIdResult: Receiver;
-  let data: Message[];
-
-  try {
-    receiverIdResponse = await fetch(
-      `${process.env.NEXT_PUBLIC_BACKEND_URL}/conversation/with/${receiverId}`,
-      {
-        headers: {
-          Cookie: `token=${token}`,
-        },
-      },
-    );
-
-    receiverIdResult = await receiverIdResponse.json();
-  } catch {
-    console.log("line 69");
-    redirect("/login");
-    return;
-  }
-
-  if (receiverIdResult.convoExist) {
-    try {
-      const conversationId: string|undefined = receiverIdResult?.data?._id;
-      response = await fetch(
-        `${process.env.NEXT_PUBLIC_BACKEND_URL}/message/${conversationId}`,
-        {
-          headers: {
-            Cookie: `token=${token}`,
+      try {
+        receiverIdResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_BACKEND_URL}/conversation/with/${receiverId}`,
+          {
+            credentials: "include",
           },
-        },
-      );
+        );
 
-      result = await response.json();
-
-      data = result.data;
-
-      if (!response?.ok) {
-        redirect("/login");
+        receiverIdResult = await receiverIdResponse.json();
+      } catch {
+        // console.log("line 59; fetch checking if the convo exist");
+        router.push("/login");
         return;
       }
-    } catch {
-      redirect("/conversations");
-      return
+      if(!receiverIdResponse.ok){
+        router.push("/login");
+        return;
+
+      }
+
+      if (receiverIdResult.convoExist) {
+        try {
+          const conversationId: string | undefined =
+            receiverIdResult?.data?._id;
+          response = await fetch(
+            `${process.env.NEXT_PUBLIC_BACKEND_URL}/message/${conversationId}`,
+            {
+              credentials: "include",
+            },
+          );
+
+          result = await response.json();
+          // console.log(result.data);
+
+          if (!response?.ok) {
+            router.push("/login");
+            return;
+          }
+
+          setMessage(result.data);
+          setCurrentUserId(result.currentUserId);
+
+          
+        } catch {
+          router.push("/conversations");
+          return;
+        }
+      } else {
+        setMessage([]);
+      }
     }
-  } else {
-    data = [];
-  }
-
-  const decode = jwtDecode<{ id: string }>(token);
-  const currentUserId = decode.id;
-
+    fetchConversation();
+  }, [receiverId, router]);
 
   return (
     <ChatRoom
       receiverId={receiverId}
       currentUserId={currentUserId}
-      messages={data}
+      messages={message}
     />
   );
 }
