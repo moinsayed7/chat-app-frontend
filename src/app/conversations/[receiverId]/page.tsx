@@ -29,6 +29,7 @@ interface Conversation {
 interface Receiver {
   convoExist: boolean;
   data: Conversation | null;
+  currentUserId: string;
 }
 
 export default function Messages() {
@@ -60,11 +61,12 @@ export default function Messages() {
         router.push("/login");
         return;
       }
-      if(!receiverIdResponse.ok){
+      if (!receiverIdResponse.ok) {
         router.push("/login");
         return;
-
       }
+
+      setCurrentUserId(receiverIdResult.currentUserId);
 
       if (receiverIdResult.convoExist) {
         try {
@@ -86,9 +88,6 @@ export default function Messages() {
           }
 
           setMessage(result.data);
-          setCurrentUserId(result.currentUserId);
-
-          
         } catch {
           router.push("/conversations");
           return;
