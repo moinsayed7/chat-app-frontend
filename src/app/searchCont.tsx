@@ -19,10 +19,8 @@ export default function SearchCont() {
     setText(searchText);
   }
 
-  return (
-    <div>
-      <SearchBar sendSearchText={getSearchText} />
-      <SearchedUsers searchText={text} />
-    </div>
-  );
+  return (<div className="space-y-6">
+  <SearchBar sendSearchText={getSearchText} />
+  <SearchedUsers searchText={text} />
+</div>);
 }
