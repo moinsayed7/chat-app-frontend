@@ -30,14 +30,11 @@ export function ChatRoom({
     });
 
     newSocket.on("connect", () => {
-      console.log("Socket connected:", newSocket.id);
     });
 
     newSocket.on("connect_error", (err) => {
       console.error("Socket connection error:", err.message);
     });
-
-    
 
     setSocket(newSocket);
 
@@ -46,27 +43,23 @@ export function ChatRoom({
     };
   }, []);
 
-  return (<div className="flex flex-col h-[calc(100vh-3rem)] max-w-4xl mx-auto bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
-  {socket && (
-    <div className="flex flex-col h-full min-h-0">
-      <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
-        <MessageList
-          initialMessages={messages}
-          currentUserId={currentUserId}
-          socket={socket}
-        />
-      </div>
+  return (
+    <div className="flex flex-col h-[calc(100vh-3rem)] max-w-4xl mx-auto bg-white border border-zinc-200 rounded-2xl shadow-xs overflow-hidden">
+      {socket && (
+        <div className="flex flex-col h-full min-h-0">
+          <div className="flex-1 overflow-y-auto min-h-0 p-4 sm:p-6">
+            <MessageList
+              initialMessages={messages}
+              currentUserId={currentUserId}
+              socket={socket}
+            />
+          </div>
 
-      <div className="border-t border-zinc-200 bg-white p-4 shrink-0">
-        <ChatForm
-          receiverId={receiverId}
-          socket={socket}
-        />
-      </div>
+          <div className="border-t border-zinc-200 bg-white p-4 shrink-0">
+            <ChatForm receiverId={receiverId} socket={socket} />
+          </div>
+        </div>
+      )}
     </div>
-  )}
-</div>);
+  );
 }
-
-
-

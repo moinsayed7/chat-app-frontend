@@ -28,8 +28,6 @@ export function MessageList({
 
   useEffect(() => {
     function handleNewMessage(msg: Message) {
-      console.log("Received event, appending:", msg);
-
       setMessages((prev) => [...prev, msg]);
     }
 

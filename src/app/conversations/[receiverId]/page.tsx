@@ -57,7 +57,6 @@ export default function Messages() {
 
         receiverIdResult = await receiverIdResponse.json();
       } catch {
-        // console.log("line 59; fetch checking if the convo exist");
         router.push("/login");
         return;
       }
@@ -80,8 +79,6 @@ export default function Messages() {
           );
 
           result = await response.json();
-          // console.log(result.data);
-
           if (!response?.ok) {
             router.push("/login");
             return;

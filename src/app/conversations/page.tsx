@@ -42,8 +42,6 @@ export default function Conversations() {
       );
 
       if (!response.ok) {
-        console.log("token is there but line 46");
-        console.log(response.status);
         router.push("/login");
         return;
       }
