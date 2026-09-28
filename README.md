@@ -1,77 +1,66 @@
-This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
+# Chat App — Frontend
 
-## Getting Started
+Next.js frontend for a real-time chat application, talking to a standalone Express/Socket.io backend over a cross-origin, cookie-authenticated API.
 
-First, run the development server:
+**Backend repo:** [chat-app](https://github.com/moinsayed7/chat-app)
+**Live app:** add your Vercel URL here
+
+---
+
+## Tech stack
+
+- Next.js (App Router) + TypeScript
+- Tailwind CSS
+- socket.io-client
+- jwt-decode
+
+## Features
+
+- Registration and login against the backend's hand-rolled JWT auth
+- Live conversation inbox with last-message previews
+- Real-time messaging — sent and received messages appear instantly via a shared Socket.io connection, no polling or manual refresh
+- Starting a new conversation with any user via search, without needing to already have an existing thread
+- Full message history on page load, live updates layered on top
+
+## Architecture notes
+
+**Cross-domain cookies only work from the browser, not from a Server Component.**
+
+The backend sets the JWT as an `httpOnly` cookie scoped to its own domain (the Render backend URL). A Next.js Server Component runs on Vercel's server, not in the user's browser — when it tries to `fetch()` the backend, it's Vercel's server making that request, and it never had access to a cookie that's scoped to a completely different domain and stored in the *user's* browser. This worked locally only because `localhost:3000` and `localhost:3001` are technically the same host (just different ports), which browsers treat more leniently than genuinely separate domains.
+
+Once deployed to real, separate domains (`*.vercel.app` and `*.onrender.com`), any page needing authenticated data has to fetch client-side, in the browser, using `fetch(url, { credentials: 'include' })` — the same mechanism used for login and registration from the start. This is why `/conversations` and the message-thread page are Client Components rather than Server Components, despite the tradeoff of losing server-side rendering for that data.
+
+**One shared Socket.io connection per chat session, not one per component.**
+
+Both the message list and the send-message form need access to the same live connection — the list to receive `newMessage` events, the form to emit `sendMessage`. A shared parent component (`ChatRoom`) owns the single connection and passes it down, rather than each child opening its own — avoiding duplicate connections registering against the same user in the backend's online-users map.
+
+**`useRef` for a socket instance created via `useEffect` needs care around render timing.** A `useRef`-held socket doesn't trigger a re-render when it's set, so a child component's `useEffect` can run and read the ref *before* the parent's `useEffect` has actually created the socket — a real race condition. Using `useState` instead (which does trigger a re-render on assignment) makes the child correctly re-run its effect once the real socket instance exists.
+
+## Getting started
+
+### Prerequisites
+- The backend running locally (or deployed) — see the [backend repo](https://github.com/moinsayed7/chat-app)
+
+### Setup
+```bash
+npm install
+```
+
+Create a `.env.local` file:
+```
+NEXT_PUBLIC_BACKEND_URL=http://localhost:3000
+```
 
 ```bash
 npm run dev
-# or
-yarn dev
-# or
-pnpm dev
-# or
-bun dev
 ```
 
-Open [http://localhost:3000](http://localhost:3000) with your browser to see the result.
+## Pages
 
-You can start editing the page by modifying `app/page.tsx`. The page auto-updates as you edit the file.
-
-This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
-
-## Learn More
-
-To learn more about Next.js, take a look at the following resources:
-
-- [Next.js Documentation](https://nextjs.org/docs) - learn about Next.js features and API.
-- [Learn Next.js](https://nextjs.org/learn) - an interactive Next.js tutorial.
-
-You can check out [the Next.js GitHub repository](https://github.com/vercel/next.js) - your feedback and contributions are welcome!
-
-## Deploy on Vercel
-
-The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
-
-Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
-"use client";
-
-import { useState } from "react";
-import { io, Socket } from "socket.io-client";
-
-export function ChatForm({ receiverId, socketRef }: { receiverId: string | undefined, socketRef:Socket|null }) {
-  const [text, setText] = useState<string>("");
-
-  function handleSubmit(e: React.FormEvent) {
-    e.preventDefault();
-
-    if (!receiverId) {
-      return;
-    }
-
-    if (!socketRef) {
-      return;
-    }
-
-    socketRef.emit("sendMessage", {receiverId, text});
-
-    setText("")
-  }
-
-  
-
-  return (
-    <form onSubmit={handleSubmit}>
-      <input
-        className="border-2"
-        value={text}
-        type="text"
-        placeholder="Message"
-        onChange={(eve) => {
-          setText(eve.target.value);
-        }}
-      />
-      <button type="submit">Send</button>
-    </form>
-  );
-}
+| Route | Description |
+|---|---|
+| `/register` | Create an account |
+| `/login` | Log in |
+| `/conversations` | Inbox — list of conversations with last-message previews |
+| `/conversations/[receiverId]` | Message thread with a specific user; handles both existing and brand-new conversations |
+| `/users` | Search for users to start a new conversation with |
