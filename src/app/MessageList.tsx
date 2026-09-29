@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { Socket } from "socket.io-client";
 
 interface Message {
@@ -21,6 +21,7 @@ export function MessageList({
   socket: Socket;
 }) {
   const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     setMessages(initialMessages);
@@ -40,6 +41,10 @@ export function MessageList({
     };
   }, [socket]);
 
+  useEffect(() => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  }, [messages]);
+
   return (
     <div className="space-y-3 py-2">
       {messages.map((ele) =>
@@ -57,6 +62,7 @@ export function MessageList({
           </div>
         ),
       )}
+      <div ref={messagesEndRef} />
     </div>
   );
 }
