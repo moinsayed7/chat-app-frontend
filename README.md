@@ -3,7 +3,7 @@
 Next.js frontend for a real-time chat application, talking to a standalone Express/Socket.io backend over a cross-origin, cookie-authenticated API.
 
 **Backend repo:** [chat-app](https://github.com/moinsayed7/chat-app)
-**Live app:** [chat-app-frontend](https://github.com/moinsayed7/chat-app-frontend)
+**Live app:** [chat-app](https://chat-app-ydxs.onrender.com/)
 
 ---
 
