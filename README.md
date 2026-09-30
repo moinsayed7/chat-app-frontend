@@ -3,7 +3,13 @@
 Next.js frontend for a real-time chat application, talking to a standalone Express/Socket.io backend over a cross-origin, cookie-authenticated API.
 
 **Backend repo:** [chat-app](https://github.com/moinsayed7/chat-app)
-**Live app:** add your Vercel URL here
+**Live app:** [chat-app-frontend](https://github.com/moinsayed7/chat-app-frontend)
+
+---
+
+## Website Preview
+
+![Chat App website preview](./public/chat-app-frontend-ss.png)
 
 ---
 
